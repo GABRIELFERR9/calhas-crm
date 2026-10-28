@@ -1,0 +1,16 @@
+{
+  "name": "Costa & Silva Calhas",
+  "short_name": "Costa&Silva",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#131313",
+  "theme_color": "#131313",
+  "description": "Gestão de obras, orçamentos e caixa.",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#131313">
+    <title>Acesso — Costa &amp; Silva</title>
+    <link rel="icon" href="logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="tela-login">
+        <div class="login-card">
+            <div class="login-topo"></div>
+
+            <div class="login-marca">
+                <span class="logo-badge">
+                    <img src="logo.png" alt="" onerror="this.remove()">
+                    <span class="logo-fallback">C&amp;S</span>
+                </span>
+                <div class="nome" id="marca-nome">Costa &amp; Silva</div>
+                <div class="sub">Calhas, rufos e pingadeiras</div>
+            </div>
+
+            <form id="form-acesso" novalidate>
+                <div class="erro-login" id="erro-acesso" role="alert"></div>
+
+                <div class="campo">
+                    <label for="usuario">Usuário</label>
+                    <input type="text" class="input" id="usuario" name="usuario"
+                           autocomplete="username" autocapitalize="none" spellcheck="false" required>
+                </div>
+
+                <div class="campo">
+                    <label for="senha">Senha</label>
+                    <input type="password" class="input" id="senha" name="senha"
+                           autocomplete="current-password" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="btn-entrar">Entrar</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const form = document.getElementById('form-acesso');
+        const erro = document.getElementById('erro-acesso');
+        const botao = document.getElementById('btn-entrar');
+
+        // Nome e logo da empresa, quando já estiverem configurados.
+        fetch('/api/settings')
+            .then(r => r.ok ? r.json() : null)
+            .then(cfg => {
+                if (!cfg) return;
+                if (cfg.company_name) document.getElementById('marca-nome').textContent = cfg.company_name;
+                if (cfg.logo_url) {
+                    document.querySelector('.logo-badge').innerHTML =
+                        '<img src="' + cfg.logo_url.replace(/"/g, '&quot;') + '" alt="">';
+                }
+            })
+            .catch(() => {});
+
+        form.addEventListener('submit', async evento => {
+            evento.preventDefault();
+            erro.classList.remove('visivel');
+
+            const username = document.getElementById('usuario').value.trim();
+            const password = document.getElementById('senha').value;
+
+            if (!username || !password) {
+                erro.textContent = 'Preencha usuário e senha.';
+                erro.classList.add('visivel');
+                return;
+            }
+
+            botao.disabled = true;
+            botao.textContent = 'Entrando...';
+
+            try {
+                const resposta = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const corpo = await resposta.json().catch(() => ({}));
+
+                if (!resposta.ok) throw new Error(corpo.error || 'Não foi possível entrar.');
+                window.location.href = '/';
+            } catch (e) {
+                erro.textContent = e.message;
+                erro.classList.add('visivel');
+                document.getElementById('senha').value = '';
+                document.getElementById('senha').focus();
+            } finally {
+                botao.disabled = false;
+                botao.textContent = 'Entrar';
+            }
+        });
+    </script>
+</body>
+</html>

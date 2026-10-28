@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#131313">
+    <title>Costa &amp; Silva — Gestão de Obras</title>
+    <link rel="icon" href="logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <!-- FullCalendar (versão fixada + integridade: sem isso, um CDN comprometido
+         poderia injetar script arbitrário num app autenticado que mexe com dinheiro) -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"
+            integrity="sha384-B1OFx8Gy9GjPu8UbUyXbGQpzll9ubAUQ9agInFJ8NnD7nYG1u/CLR+Sqr5yifl4q"
+            crossorigin="anonymous"></script>
+    <!-- Chart.js (estava sem versão fixada — cada release deles mudava o app sozinho) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1"
+            integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ"
+            crossorigin="anonymous"></script>
+</head>
+<body>
+
+    <!-- Barra que aparece só no celular, onde a sidebar fica escondida -->
+    <div class="topbar-mobile">
+        <button class="btn-menu" id="btn-menu" aria-label="Abrir menu">
+            <svg class="ico" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 6H17M3 10H17M3 14H17" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        </button>
+        <div>
+            <div class="logo-text-main" id="marca-movel">Costa &amp; Silva</div>
+            <div class="logo-text-sub">Calhas, rufos e pingadeiras</div>
+        </div>
+    </div>
+    <div class="overlay-menu" id="overlay-menu"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <span class="logo-badge">
+                <img src="logo.png" alt="" onerror="this.remove()">
+                <span class="logo-fallback">C&amp;S</span>
+            </span>
+            <div>
+                <div class="logo-text-main" id="marca-nome">Costa &amp; Silva</div>
+                <div class="logo-text-sub">Calhas e rufos</div>
+            </div>
+        </div>
+
+        <div class="sidebar-section-label">Menu principal</div>
+        <nav class="sidebar-nav" aria-label="Seções do painel">
+            <button class="sidebar-link ativa" data-secao="funil" aria-current="page">
+                <svg class="ico" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M2.5 10.5L10 3.5L17.5 10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4 10V16.5M16 10V16.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    <path d="M4 11.4H16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+                Obras
+                <span class="sidebar-badge" id="cont-funil">0</span>
+            </button>
+            <button class="sidebar-link" data-secao="agenda">
+                <svg class="ico" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <rect x="3" y="4.5" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/>
+                    <path d="M3 8.5H17" stroke="currentColor" stroke-width="1.6"/>
+                    <path d="M6.5 3V6M13.5 3V6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                </svg>
+                Agenda
+                <span class="sidebar-badge" id="cont-agenda">0</span>
+            </button>
+            <button class="sidebar-link" data-secao="clientes">
+                <svg class="ico" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <circle cx="7.5" cy="7" r="2.5" stroke="currentColor" stroke-width="1.6"/>
+                    <path d="M2.5 16C2.5 12.5 4.5 11 7.5 11C10.5 11 12.5 12.5 12.5 16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    <circle cx="14.5" cy="6.5" r="2" stroke="currentColor" stroke-width="1.4" opacity=".65"/>
+                    <path d="M13.5 11.2C15.8 11.4 17.5 12.7 17.5 15.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity=".65"/>
+                </svg>
+                Clientes
+                <span class="sidebar-badge" id="cont-clientes">0</span>
+            </button>
+            <button class="sidebar-link" data-secao="caixa">
+                <svg class="ico" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <rect x="2.5" y="5.5" width="15" height="9" rx="1.5" stroke="currentColor" stroke-width="1.6"/>
+                    <circle cx="10" cy="10" r="2" stroke="currentColor" stroke-width="1.6"/>
+                    <path d="M5 10H5.01M15 10H15.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Caixa
+            </button>
+            <button class="sidebar-link" data-secao="dashboard">
+                <svg class="ico" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path d="M4 16V11M10 16V6M16 16V9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    <path d="M2.5 16H17.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity=".4"/>
+                </svg>
+                Relatórios
+            </button>
+        </nav>
+
+        <div class="sidebar-spacer"></div>
+
+        <div class="sidebar-footer">
+            <span class="sidebar-user" id="usuario-ativo"></span>
+            <button class="btn-sair" data-sair>Sair</button>
+        </div>
+    </aside>
+
+    <div class="conteudo">
+
+        <!-- ============ OBRAS (KANBAN) ============ -->
+        <section id="secao-funil" class="secao ativa">
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">Obras</h1>
+                    <p class="page-sub">Do primeiro contato no WhatsApp até a calha instalada.</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn btn-primary" id="btn-novo-orcamento">Novo orçamento</button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-label"><span class="stat-dot verde"></span> Na gaveta hoje</div>
+                        <div class="stat-value" id="valor-gaveta">—</div>
+                        <div class="stat-hint">Dinheiro e PIX já recebidos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label"><span class="stat-dot amarelo"></span> Ainda não é seu</div>
+                        <div class="stat-value" id="valor-compensar">—</div>
+                        <div class="stat-hint">Cartão e boleto a compensar</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label"><span class="stat-dot cinza"></span> Cai nos próximos dias</div>
+                        <div class="stat-value" id="valor-previsao">—</div>
+                        <div class="stat-hint">Com data marcada para depois de hoje</div>
+                    </div>
+                </div>
+                <div class="alerta-erro" role="alert"></div>
+
+                <div class="tabs-etapa" id="tabs-etapa" aria-label="Etapa da obra"></div>
+
+                <div class="kanban" id="kanban">
+                    <div class="coluna visivel" id="col-aguardando" data-etapa="aguardando">
+                        <div class="coluna-header">
+                            <span class="coluna-nome">Aguardando visita</span>
+                            <span class="coluna-contagem">0</span>
+                        </div>
+                        <div class="coluna-body"></div>
+                    </div>
+
+                    <div class="coluna" id="col-orcamento" data-etapa="orcamento">
+                        <div class="coluna-header">
+                            <span class="coluna-nome">Orçamento enviado</span>
+                            <span class="coluna-contagem">0</span>
+                        </div>
+                        <div class="coluna-body"></div>
+                    </div>
+
+                    <div class="coluna" id="col-instalacao" data-etapa="instalacao">
+                        <div class="coluna-header">
+                            <span class="coluna-nome">Instalação agendada</span>
+                            <span class="coluna-contagem">0</span>
+                        </div>
+                        <div class="coluna-body"></div>
+                    </div>
+
+                    <div class="coluna" id="col-concluido" data-etapa="concluido">
+                        <div class="coluna-header">
+                            <span class="coluna-nome">Concluído</span>
+                            <span class="coluna-contagem">0</span>
+                        </div>
+                        <div class="coluna-body"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ AGENDA ============ -->
+        <section id="secao-agenda" class="secao">
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">Agenda</h1>
+                    <p class="page-sub">Visitas e instalações com data marcada, de hoje em diante.</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn btn-ghost" id="btn-marcar-data">Marcar data</button>
+                </div>
+            </header>
+            <div class="page-body">
+                <div id="lista-agenda"></div>
+            </div>
+        </section>
+
+        <!-- ============ CLIENTES ============ -->
+        <section id="secao-clientes" class="secao">
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">Clientes</h1>
+                    <p class="page-sub">Cadastro e histórico de obras e pagamentos.</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn btn-primary" id="btn-novo-cliente">Novo cliente</button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <div class="campo" style="max-width: 380px;">
+                    <label for="busca-cliente">Buscar</label>
+                    <input type="search" class="input" id="busca-cliente" placeholder="Nome, telefone ou endereço">
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><span class="card-label">Base de clientes</span></div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>WhatsApp</th>
+                                    <th>Endereço</th>
+                                    <th>Obras</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-clientes">
+                                <tr class="vazia"><td colspan="5">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ CAIXA ============ -->
+        <section id="secao-caixa" class="secao">
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">Caixa</h1>
+                    <p class="page-sub">O que entrou de verdade hoje, separado do que só compensa depois.</p>
+                </div>
+                <div class="page-actions">
+                    <button class="btn btn-primary" id="btn-lancar">Lançar recebimento</button>
+                </div>
+            </header>
+
+            <div class="page-body">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-label"><span class="stat-dot verde"></span> Na gaveta hoje</div>
+                        <div class="stat-value" id="caixa-gaveta">—</div>
+                        <div class="stat-hint">Confere com o dinheiro físico</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label"><span class="stat-dot amarelo"></span> Ainda não é seu</div>
+                        <div class="stat-value" id="caixa-compensar">—</div>
+                        <div class="stat-hint">Lançado, mas não compensado</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label"><span class="stat-dot cinza"></span> Cai nos próximos dias</div>
+                        <div class="stat-value" id="caixa-previsao">—</div>
+                        <div class="stat-hint">Faturas e boletos a vencer</div>
+                    </div>
+                </div>
+                <div class="alerta-erro" role="alert"></div>
+
+                <div class="card">
+                    <div class="card-header"><span class="card-label">Lançamentos de hoje</span></div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Cliente / obra</th>
+                                    <th>Hora</th>
+                                    <th>Forma</th>
+                                    <th>Valor</th>
+                                    <th>Situação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-caixa">
+                                <tr class="vazia"><td colspan="5">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 16px;">
+                    <div class="card-header">
+                        <span class="card-label">Ainda não é seu — cartão e boleto pendentes</span>
+                    </div>
+                    <p style="padding: 10px 14px 0; font-size: 11.5px; color: var(--ink-3);">
+                        Quando o pagamento realmente cair na conta, confirme aqui. Sem confirmar, ele continua contando como "ainda não é seu" para sempre — o sistema nunca assume sozinho que compensou.
+                    </p>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Cliente / obra</th>
+                                    <th>Forma</th>
+                                    <th>Previsto para</th>
+                                    <th>Valor</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-pendentes">
+                                <tr class="vazia"><td colspan="5">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ DASHBOARD ============ -->
+        <section id="secao-dashboard" class="secao">
+            <header class="page-header">
+                <div>
+                    <h1 class="page-title">Relatórios</h1>
+                    <p class="page-sub">Resumo financeiro e histórico de faturamento.</p>
+                </div>
+            </header>
+            <div class="page-body">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-label">Faturamento do mês</div>
+                        <div class="stat-value" id="dash-faturamento">—</div>
+                        <div class="stat-hint">Soma do caixa recebido</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Taxa de conversão</div>
+                        <div class="stat-value" id="dash-conversao">—</div>
+                        <div class="stat-hint">Obras ganhas vs total orçado</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Ticket médio</div>
+                        <div class="stat-value" id="dash-ticket">—</div>
+                        <div class="stat-hint">Média de valor por obra</div>
+                    </div>
+                </div>
+                <div class="card" style="margin-top: 24px;">
+                    <div class="card-header"><span class="card-label">Receita dos últimos meses</span></div>
+                    <div class="table-wrapper" style="padding: 16px;">
+                        <canvas id="grafico-receita" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ DOCUMENTO DE ORÇAMENTO ============ -->
+        <section id="secao-pdf" class="secao">
+            <div class="barra-pdf">
+                <button class="btn btn-ghost" id="btn-voltar-funil">Voltar às obras</button>
+                <button class="btn btn-primary" onclick="window.print()">Imprimir / Salvar PDF</button>
+            </div>
+            <div class="area-pdf">
+                <!-- Renderizado a partir do orçamento salvo, ver renderizarDocumento() -->
+                <article class="folha-a4" id="folha-a4"></article>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Chegada de lead real pelo webhook da Evolution -->
+    <aside class="lead-popup" id="lead-popup" aria-live="polite"></aside>
+
+    <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+    <!-- ============ MODAL: ORÇAMENTO ============ -->
+    <div class="modal-overlay" id="modal-orcamento">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="titulo-orcamento">
+            <div class="modal-header">
+                <h2 id="titulo-orcamento">Novo orçamento</h2>
+                <button class="btn-fechar" data-fechar aria-label="Fechar">
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="campo">
+                    <label for="orc-cliente">Cliente</label>
+                    <select class="input" id="orc-cliente"></select>
+                </div>
+
+                <div class="linha-campos" id="orc-novo-cliente" style="display: none;">
+                    <div class="campo">
+                        <label for="orc-nome">Nome do novo cliente</label>
+                        <input type="text" class="input" id="orc-nome" placeholder="Ex: Roberto Oliveira">
+                    </div>
+                    <div class="campo">
+                        <label for="orc-telefone">WhatsApp (opcional)</label>
+                        <input type="tel" class="input" id="orc-telefone" placeholder="(61) 90000-0000">
+                    </div>
+                </div>
+
+                <div class="linha-campos">
+                    <div class="campo" style="flex: 2;">
+                        <label for="orc-endereco">Endereço da obra</label>
+                        <input type="text" class="input" id="orc-endereco" placeholder="Ex: QNM 12 Conj. B Lote 15 — Ceilândia/DF">
+                    </div>
+                    <div class="campo">
+                        <label for="orc-servico">Tipo de serviço</label>
+                        <input type="text" class="input" id="orc-servico" placeholder="Ex: Instalação completa">
+                    </div>
+                </div>
+
+                <div class="campo">
+                    <span class="rotulo-campo">Serviços e materiais</span>
+                    <table class="tabela-itens">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th style="width: 78px;">Qtd</th>
+                                <th style="width: 118px;">Valor un.</th>
+                                <th style="width: 108px; text-align: right;">Total</th>
+                                <th style="width: 34px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="orc-itens"></tbody>
+                    </table>
+                    <button type="button" class="btn btn-ghost btn-xs" id="btn-add-item" style="margin-top: 9px;">+ Adicionar item</button>
+                </div>
+
+                <div class="campo">
+                    <label for="orc-obs">Observações (opcional)</label>
+                    <textarea class="input" id="orc-obs" rows="2" placeholder="Ex: precisa de andaime no fundo do lote."></textarea>
+                </div>
+
+                <div class="barra-total">
+                    <span class="rot">Total do orçamento</span>
+                    <span class="val" id="orc-total">R$ 0,00</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-fechar>Cancelar</button>
+                <button class="btn btn-primary" id="btn-gerar-orcamento">Gerar documento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL: RECEBIMENTO ============ -->
+    <div class="modal-overlay" id="modal-recebimento">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="titulo-recebimento">
+            <div class="modal-header">
+                <h2 id="titulo-recebimento">Lançar recebimento</h2>
+                <button class="btn-fechar" data-fechar aria-label="Fechar">
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="linha-campos">
+                    <div class="campo" style="flex: 2;">
+                        <label for="rec-obra">Obra</label>
+                        <select class="input" id="rec-obra"></select>
+                    </div>
+                    <div class="campo">
+                        <label for="rec-total">Valor total da obra</label>
+                        <input type="text" class="input" id="rec-total" inputmode="decimal" placeholder="0,00">
+                    </div>
+                </div>
+
+                <div class="atalhos">
+                    <span class="rot">Dividir</span>
+                    <button type="button" class="btn btn-ghost btn-xs" data-divisao="50">50 / 50</button>
+                    <button type="button" class="btn btn-ghost btn-xs" data-divisao="30">30 / 70</button>
+                    <button type="button" class="btn btn-ghost btn-xs" data-divisao="100">Tudo à vista</button>
+                </div>
+
+                <div id="rec-parcelas"></div>
+
+                <button type="button" class="btn btn-ghost btn-xs" id="btn-add-parcela" style="margin-top: 10px;">+ Adicionar parcela</button>
+
+                <div class="barra-total">
+                    <span class="rot">Somando <span id="rec-qtd">0</span> parcela(s)</span>
+                    <span class="val" id="rec-soma">R$ 0,00</span>
+                </div>
+                <div class="aviso-conferencia" id="rec-aviso" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-fechar>Cancelar</button>
+                <button class="btn btn-primary" id="btn-confirmar-recebimento">Lançar no caixa</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL: CLIENTE ============ -->
+    <div class="modal-overlay" id="modal-cliente">
+        <div class="modal" style="max-width: 620px;" role="dialog" aria-modal="true" aria-labelledby="titulo-cliente">
+            <div class="modal-header">
+                <h2 id="titulo-cliente">Novo cliente</h2>
+                <button class="btn-fechar" data-fechar aria-label="Fechar">
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="campo">
+                    <label for="cli-nome">Nome</label>
+                    <input type="text" class="input" id="cli-nome" placeholder="Ex: Condomínio Residencial Aurora">
+                </div>
+                <div class="linha-campos">
+                    <div class="campo">
+                        <label for="cli-telefone">WhatsApp</label>
+                        <input type="tel" class="input" id="cli-telefone" placeholder="(61) 90000-0000">
+                    </div>
+                    <div class="campo">
+                        <label for="cli-endereco">Endereço</label>
+                        <input type="text" class="input" id="cli-endereco" placeholder="Rua, número, cidade">
+                    </div>
+                </div>
+                <div id="cli-historico"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" data-fechar>Cancelar</button>
+                <button class="btn btn-primary" id="btn-salvar-cliente">Salvar cliente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MODAL: MARCAR DATA ============ -->
+    <div class="modal-overlay" id="modal-data">
+        <div class="modal" style="max-width: 520px;" role="dialog" aria-modal="true" aria-labelledby="titulo-data">
+            <div class="modal-header">
+                <h2 id="titulo-data">Marcar data da obra</h2>
+                <button class="btn-fechar" data-fechar aria-label="Fechar">
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 5L15 15M15 5L5 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="campo">
+                    <label for="data-obra">Obra</label>
+                    <select class="input" id="data-obra"></select>
+                </div>
+                <div class="linha-campos">
+                    <div class="campo">
+                        <label for="data-dia">Dia</label>
+                        <input type="date" class="input" id="data-dia">
+                    </div>
+                    <div class="campo">
+                        <label for="data-hora">Hora</label>
+                        <input type="time" class="input" id="data-hora" value="09:00">
+                    </div>
+                </div>
+                <p style="font-size: 11.5px; color: var(--ink-3);">
+                    Marcar uma data move a obra para <strong>Instalação agendada</strong>.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" id="btn-limpar-data">Tirar da agenda</button>
+                <button class="btn btn-primary" id="btn-salvar-data">Salvar data</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    console.log('[PWA] Service Worker registrado', reg);
+                }).catch(err => {
+                    console.warn('[PWA] Falha ao registrar Service Worker', err);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
